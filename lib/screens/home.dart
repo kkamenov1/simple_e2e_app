@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
 
@@ -14,7 +13,32 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home"),
+        title: Text("DrawApp"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  child: Text('Draw'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/draw');
+                  },
+                ),
+                ElevatedButton(
+                  child: Text('History'),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/history');
+                  },
+                ),
+              ],
+            )
+          ],
+        )
       ),
     );
   }

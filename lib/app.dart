@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home.dart';
+import 'screens/draw.dart';
+import 'screens/history.dart';
 
 class App extends StatelessWidget {
   // This widget is the root of your application.
@@ -11,7 +13,12 @@ class App extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         fontFamily: 'Open Sans',
       ),
-      home: Home(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => Home(),
+        '/draw': (context) => Draw(),
+        '/history': (context) => History(),
+      }
     );
   }
 }

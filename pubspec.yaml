@@ -1,4 +1,4 @@
-name: minimalist_flutter_template
+name: simple_e2e_app
 description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^0.1.3
+  flutter_colorpicker: ^0.4.0
 
 dev_dependencies:
   flutter_test:
