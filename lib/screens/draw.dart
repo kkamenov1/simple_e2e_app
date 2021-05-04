@@ -1,13 +1,16 @@
+import 'dart:typed_data';
 import 'dart:ui';
-
+import 'dart:convert';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import '../providers/drawing.dart';
 
 class DrawingArea {
   Offset point;
   Paint areaPaint;
 
-  DrawingArea({ this.point, this.areaPaint });
+  DrawingArea({this.point, this.areaPaint});
 }
 
 class Draw extends StatefulWidget {
@@ -37,15 +40,14 @@ class _DrawState extends State<Draw> {
       builder: (_) => AlertDialog(
         title: const Text('Color Chooser'),
         content: SingleChildScrollView(
-          child: BlockPicker(
-            pickerColor: selectedColor,
-            onColorChanged: (color) {
-              this.setState(() {
-                selectedColor = color;
-              });
-            },
-          )
-        ),
+            child: BlockPicker(
+          pickerColor: selectedColor,
+          onColorChanged: (color) {
+            this.setState(() {
+              selectedColor = color;
+            });
+          },
+        )),
         actions: [
           ElevatedButton(
             onPressed: () {
@@ -58,133 +60,139 @@ class _DrawState extends State<Draw> {
     );
   }
 
+  // void savePicture() async {
+  //   final PictureRecorder recorder = PictureRecorder();
+  //   var myPainter = MyCustomPainter(points: points);
+  //   myPainter.paint(Canvas(recorder), Size(200, 200));
+  //   final Picture picture = recorder.endRecording();
+  //   final img = await picture.toImage(200, 200);
+  //   final pngBytes = await img.toByteData(format: ImageByteFormat.png);
+
+  //   // send request to store it in the db
+  //   Provider.of<Drawing>(context, listen: false).saveImage(pngBytes.toString());
+  // }
+
   @override
   Widget build(BuildContext context) {
-
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("DrawApp"),
-      ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.orange
-            )
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: width * 0.9,
-                  height: height * 0.7,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
-                        blurRadius: 5.0,
-                        spreadRadius: 1.0
-                      )
-                    ]
-                  ),
-                  child: GestureDetector(
-                    onPanDown: (details){
-                      this.setState(() {
-                        points.add(DrawingArea(
-                          point: details.localPosition,
-                          areaPaint: Paint()
-                            ..strokeCap = StrokeCap.round
-                            ..isAntiAlias = true
-                            ..color = selectedColor
-                            ..strokeWidth = strokeWidth
-                        ));
-                      });
-                    },
-                    onPanUpdate: (details){
-                      this.setState(() {
-                        points.add(DrawingArea(
-                          point: details.localPosition,
-                          areaPaint: Paint()
-                            ..strokeCap = StrokeCap.round
-                            ..isAntiAlias = true
-                            ..color = selectedColor
-                            ..strokeWidth = strokeWidth
-                        ));
-                      });
-                    },
-                    onPanEnd: (details){
-                      this.setState(() {
-                        points.add(null);
-                      });
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                      child: CustomPaint(
-                        painter: MyCustomPainter(points: points),
-                      ),
-                    )
-                  ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                Container(
-                  width: width * 0.9,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(20.0))
-                  ),
-                  child: Row(
+        appBar: AppBar(
+          title: Text("DrawApp"),
+        ),
+        body: Stack(
+          children: [
+            Container(decoration: BoxDecoration(color: Colors.orange)),
+            Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      IconButton(
-                        icon: Icon(Icons.color_lens, color: selectedColor,),
-                        onPressed: () {
-                          selectColor();
-                        }
-                      ),
-                      Expanded(
-                        child: Slider(
-                          value: strokeWidth,
-                          onChanged: (value) {
-                            this.setState(() {
-                              strokeWidth = value;
-                            });
-                          },
-                          min: 1.0,
-                          max: 7.0,
-                          activeColor: selectedColor,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.layers_clear),
-                        onPressed: () {
+                  Container(
+                    width: width * 0.9,
+                    height: height * 0.6,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.4),
+                              blurRadius: 5.0,
+                              spreadRadius: 1.0)
+                        ]),
+                    child: GestureDetector(
+                        onPanDown: (details) {
                           this.setState(() {
-                            points.clear();
+                            points.add(DrawingArea(
+                                point: details.localPosition,
+                                areaPaint: Paint()
+                                  ..strokeCap = StrokeCap.round
+                                  ..isAntiAlias = true
+                                  ..color = selectedColor
+                                  ..strokeWidth = strokeWidth));
                           });
-                        }
-                      )
-                    ],
+                        },
+                        onPanUpdate: (details) {
+                          this.setState(() {
+                            points.add(DrawingArea(
+                                point: details.localPosition,
+                                areaPaint: Paint()
+                                  ..strokeCap = StrokeCap.round
+                                  ..isAntiAlias = true
+                                  ..color = selectedColor
+                                  ..strokeWidth = strokeWidth));
+                          });
+                        },
+                        onPanEnd: (details) {
+                          this.setState(() {
+                            points.add(null);
+                          });
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                          child: CustomPaint(
+                            painter: MyCustomPainter(points: points),
+                          ),
+                        )),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Container(
+                      width: width * 0.9,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(20.0))),
+                      child: Row(
+                        children: [
+                          IconButton(
+                              icon: Icon(
+                                Icons.color_lens,
+                                color: selectedColor,
+                              ),
+                              onPressed: () {
+                                selectColor();
+                              }),
+                          Expanded(
+                            child: Slider(
+                              value: strokeWidth,
+                              onChanged: (value) {
+                                this.setState(() {
+                                  strokeWidth = value;
+                                });
+                              },
+                              min: 1.0,
+                              max: 7.0,
+                              activeColor: selectedColor,
+                            ),
+                          ),
+                          IconButton(
+                              icon: Icon(Icons.layers_clear),
+                              onPressed: () {
+                                this.setState(() {
+                                  points.clear();
+                                });
+                              })
+                        ],
+                      )),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text('Save'),
                   )
-                )
-              ]
-            )
-          )
-        ],
-      )
-    );
+                ]))
+          ],
+        ));
   }
 }
 
 class MyCustomPainter extends CustomPainter {
   List<DrawingArea> points;
 
-  MyCustomPainter({ this.points });
+  MyCustomPainter({this.points});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -193,10 +201,12 @@ class MyCustomPainter extends CustomPainter {
     canvas.drawRect(rect, background);
 
     for (int x = 0; x < points.length - 1; x++) {
-      if (points[x] != null && points[x + 1] != null) { // user draws
+      if (points[x] != null && points[x + 1] != null) {
+        // user draws
         Paint paint = points[x].areaPaint;
         canvas.drawLine(points[x].point, points[x + 1].point, paint);
-      } else if (points[x] != null && points[x + 1] == null) { // user just taps on the screen
+      } else if (points[x] != null && points[x + 1] == null) {
+        // user just taps on the screen
         Paint paint = points[x].areaPaint;
         canvas.drawPoints(PointMode.points, [points[x].point], paint);
       }
