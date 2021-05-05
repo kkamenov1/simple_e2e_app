@@ -29,8 +29,6 @@ class Auth with ChangeNotifier {
           headers: {"Content-Type": "application/json"},
           body: json.encode({'username': username, 'password': password}));
 
-      print(response.body); // REMOVE THIS
-
       final responseData = json.decode(response.body);
       if (responseData['error'] != null) {
         throw HttpException(responseData['error']);
@@ -61,8 +59,6 @@ class Auth with ChangeNotifier {
       if (responseData['error'] != null) {
         throw HttpException(responseData['error']);
       }
-
-      print(responseData); // REMOVE THIS
 
       _token = responseData['access_token'];
       _expiryDate =

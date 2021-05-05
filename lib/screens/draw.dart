@@ -22,21 +22,23 @@ class _DrawState extends State<Draw> {
 
   Future<void> saveDrawing() async {
     var result = '';
-    for (var i = 0; i < points.length; i++) {
-      if (points[i] != null) {
-        result += '[${points[i].dx};${points[i].dy}]';
-      } else {
-        result += '[null]';
+    if (points.isNotEmpty) {
+      for (var i = 0; i < points.length; i++) {
+        if (points[i] != null) {
+          result += '[${points[i].dx};${points[i].dy}]';
+        } else {
+          result += '[null]';
+        }
       }
+      await Provider.of<Drawing>(context, listen: false).saveImage(result);
     }
-
-    await Provider.of<Drawing>(context, listen: false).saveImage(result);
   }
 
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
+    final snackBar = SnackBar(content: Text('Drawing Saved!'));
 
     return Scaffold(
         appBar: AppBar(
@@ -88,8 +90,19 @@ class _DrawState extends State<Draw> {
                     height: 20,
                   ),
                   ElevatedButton(
-                    onPressed: saveDrawing,
+                    onPressed: () {
+                      saveDrawing();
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    },
                     child: Text('Save'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        points = [];
+                      });
+                    },
+                    child: Text('Clear board'),
                   )
                 ]))
           ],

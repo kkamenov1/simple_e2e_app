@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_e2e_app/providers/drawing.dart';
 import 'package:simple_e2e_app/screens/draw.dart';
+import 'package:flutter/foundation.dart';
 
 class History extends StatefulWidget {
   History({Key key}) : super(key: key);
@@ -31,7 +32,7 @@ class _HistoryState extends State<History> {
             ));
   }
 
-  void _showDrawingDialog(dynamic drawing) {
+  void _showDrawingDialog(dynamic drawing, int index) {
     // extract and convert points;
     RegExp exp = RegExp(r"(\d+\.\d+;\d+\.\d+)|(null)");
     final drawingPoints = drawing['points'];
@@ -54,7 +55,7 @@ class _HistoryState extends State<History> {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: Text('Drawing ${drawing['id']}'),
+              title: Text('Drawing #$index'),
               content: Center(
                 child: Container(
                   child: CustomPaint(
@@ -72,89 +73,65 @@ class _HistoryState extends State<History> {
             ));
   }
 
-  Future<void> deleteDrawing(int id) async {
-    final response =
-        await Provider.of<Drawing>(context, listen: false).deleteImage(id);
+  Future<void> deleteDrawing(int index) async {
+    await Provider.of<Drawing>(context, listen: false).deleteImage(index);
+    _showNotificationDialog('Successfully deleted drawing!');
+  }
 
-    if (response.statusCode == 200) {
-      _showNotificationDialog('Successfully deleted drawing!');
-      await Provider.of<Drawing>(context, listen: false).getAllImages();
-    } else {
-      _showNotificationDialog('An Error Occured!');
+  @override
+  void initState() {
+    final drawing = Provider.of<Drawing>(context, listen: false);
+
+    if (drawing.drawings.isEmpty) {
+      Provider.of<Drawing>(context, listen: false).getAllImages();
     }
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
+    final drawing = Provider.of<Drawing>(context);
 
-    return FutureBuilder(
-      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text("DrawApp"),
-          ),
-          body: Stack(
-            children: [
-              Container(decoration: BoxDecoration(color: Colors.orange)),
-              Center(
-                child: (() {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
-                  } else {
-                    if (snapshot.hasError)
-                      return Text('An Error Occured!');
-                    else
-                      return snapshot.data.length == 0
-                          ? Text('No drawings')
-                          : Column(
-                              children: [
-                                SizedBox(
-                                  height: 20,
-                                ),
-                                for (var i = 0; i < snapshot.data.length; i++)
-                                  Container(
-                                    width: width * 0.9,
-                                    padding: const EdgeInsets.all(10.0),
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        border: Border.all()),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                            child: Text('Drawing #${i + 1}')),
-                                        Padding(
-                                          padding: EdgeInsets.fromLTRB(
-                                              0.0, 0.0, 10.0, 0.0),
-                                          child: ElevatedButton(
-                                              onPressed: () {
-                                                _showDrawingDialog(
-                                                    snapshot.data[i]);
-                                              },
-                                              child: Text('View')),
-                                        ),
-                                        ElevatedButton(
-                                            onPressed: () {
-                                              deleteDrawing(
-                                                  snapshot.data[i]['id']);
-                                            },
-                                            child: Text('Delete')),
-                                        SizedBox(
-                                          height: 20,
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                              ],
-                            );
-                  }
-                }()),
-              )
-            ],
-          ),
-        );
-      },
-      future: Provider.of<Drawing>(context, listen: false).getAllImages(),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Your Drawings'),
+      ),
+      body: Column(
+        children: [
+          SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+                itemCount: drawing.drawings.length,
+                itemBuilder: (ctx, i) => Card(
+                      margin: EdgeInsets.all(15),
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(
+                              'Drawing #${i + 1}',
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            Spacer(),
+                            ElevatedButton(
+                                onPressed: () {
+                                  _showDrawingDialog(
+                                      drawing.drawings[i], i + 1);
+                                },
+                                child: Text('View')),
+                            ElevatedButton(
+                                onPressed: () {
+                                  deleteDrawing(i);
+                                },
+                                child: Text('Delete')),
+                          ],
+                        ),
+                      ),
+                    )),
+          )
+        ],
+      ),
     );
   }
 }
