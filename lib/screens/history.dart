@@ -16,26 +16,8 @@ class History extends StatefulWidget {
 class _HistoryState extends State<History> {
   _HistoryState();
 
-  void _showNotificationDialog(String message) {
-    showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-              title: Text('Drawing deletion'),
-              content: Text(message),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Okay'))
-              ],
-            ));
-  }
-
-  void _showDrawingDialog(dynamic drawing, int index) {
-    // extract and convert points;
+  List<Offset> parsePoints(String drawingPoints) {
     RegExp exp = RegExp(r"(\d+\.\d+;\d+\.\d+)|(null)");
-    final drawingPoints = drawing['points'];
     List<Offset> points = [];
     Iterable<RegExpMatch> matches = exp.allMatches(drawingPoints);
     matches.forEach((match) {
@@ -51,6 +33,13 @@ class _HistoryState extends State<History> {
         points.add(point);
       }
     });
+
+    return points;
+  }
+
+  void _showDrawingDialog(dynamic drawing, int index) {
+    // extract and convert points;
+    final points = parsePoints(drawing['points']);
 
     showDialog(
         context: context,
@@ -71,11 +60,6 @@ class _HistoryState extends State<History> {
                     child: Text('Okay'))
               ],
             ));
-  }
-
-  Future<void> deleteDrawing(int index) async {
-    await Provider.of<Drawing>(context, listen: false).deleteImage(index);
-    _showNotificationDialog('Successfully deleted drawing!');
   }
 
   @override
@@ -122,7 +106,12 @@ class _HistoryState extends State<History> {
                                 child: Text('View')),
                             ElevatedButton(
                                 onPressed: () {
-                                  deleteDrawing(i);
+                                  Provider.of<Drawing>(context, listen: false)
+                                      .deleteImage(i);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'Successfully deleted drawing!')));
                                 },
                                 child: Text('Delete')),
                           ],
