@@ -14,7 +14,11 @@ class App extends StatelessWidget {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider.value(value: Auth()),
-          ChangeNotifierProvider.value(value: Drawing())
+          ChangeNotifierProxyProvider<Auth, Drawing>(
+            update: (ctx, auth, previousDrawings) => Drawing(
+                auth.token, previousDrawings == null ? [] : previousDrawings),
+            create: null,
+          ),
         ],
         child: Consumer<Auth>(
             builder: (ctx, auth, _) => MaterialApp(
