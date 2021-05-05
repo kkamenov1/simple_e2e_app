@@ -4,7 +4,11 @@ import 'package:provider/provider.dart';
 import '../providers/drawing.dart';
 
 class Draw extends StatefulWidget {
-  Draw({Key key}) : super(key: key);
+  final List<Offset> points;
+  Draw({
+    Key key,
+    this.points,
+  }) : super(key: key);
 
   @override
   _DrawState createState() => _DrawState();
@@ -17,6 +21,9 @@ class _DrawState extends State<Draw> {
 
   @override
   void initState() {
+    if (widget.points != null) {
+      points = widget.points;
+    }
     super.initState();
   }
 
@@ -41,72 +48,94 @@ class _DrawState extends State<Draw> {
     final snackBar = SnackBar(content: Text('Drawing Saved!'));
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text("DrawApp"),
-        ),
-        body: Stack(
-          children: [
-            Container(decoration: BoxDecoration(color: Colors.orange)),
-            Center(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                  Container(
-                    width: width * 0.9,
-                    height: height * 0.6,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
-                              blurRadius: 5.0,
-                              spreadRadius: 1.0)
-                        ]),
-                    child: GestureDetector(
-                        onPanDown: (details) {
-                          this.setState(() {
-                            points.add(details.localPosition);
-                          });
-                        },
-                        onPanUpdate: (details) {
-                          this.setState(() {
-                            points.add(details.localPosition);
-                          });
-                        },
-                        onPanEnd: (details) {
-                          this.setState(() {
-                            points.add(null);
-                          });
-                        },
-                        child: ClipRRect(
+      appBar: AppBar(
+        title: Text("DrawApp"),
+      ),
+      body: Stack(
+        children: [
+          Container(decoration: BoxDecoration(color: Colors.orange)),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: width * 0.9,
+                  height: height * 0.6,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.4),
+                          blurRadius: 5.0,
+                          spreadRadius: 1.0)
+                    ],
+                  ),
+                  child: widget.points == null
+                      ? GestureDetector(
+                          onPanDown: (details) {
+                            this.setState(() {
+                              points.add(details.localPosition);
+                            });
+                          },
+                          onPanUpdate: (details) {
+                            this.setState(() {
+                              points.add(details.localPosition);
+                            });
+                          },
+                          onPanEnd: (details) {
+                            this.setState(() {
+                              points.add(null);
+                            });
+                          },
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(20.0)),
+                            child: CustomPaint(
+                              painter: MyCustomPainter(points: points),
+                            ),
+                          ),
+                        )
+                      : ClipRRect(
                           borderRadius: BorderRadius.all(Radius.circular(20.0)),
                           child: CustomPaint(
                             painter: MyCustomPainter(points: points),
                           ),
-                        )),
-                  ),
-                  SizedBox(
+                        ),
+                ),
+                Visibility(
+                  child: SizedBox(
                     height: 20,
                   ),
-                  ElevatedButton(
+                  visible: widget.points == null,
+                ),
+                Visibility(
+                  child: ElevatedButton(
                     onPressed: () {
                       saveDrawing();
                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     },
                     child: Text('Save'),
                   ),
-                  ElevatedButton(
+                  visible: widget.points == null,
+                ),
+                Visibility(
+                  child: ElevatedButton(
                     onPressed: () {
                       setState(() {
                         points = [];
                       });
                     },
                     child: Text('Clear board'),
-                  )
-                ]))
-          ],
-        ));
+                  ),
+                  visible: widget.points == null,
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
   }
 }
 

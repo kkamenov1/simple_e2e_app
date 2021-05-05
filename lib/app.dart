@@ -13,34 +13,37 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: Auth()),
-          ChangeNotifierProxyProvider<Auth, Drawing>(
-            update: (ctx, auth, previousDrawings) => Drawing(auth.token,
-                previousDrawings == null ? [] : previousDrawings.drawings),
-            create: null,
+      providers: [
+        ChangeNotifierProvider.value(value: Auth()),
+        ChangeNotifierProxyProvider<Auth, Drawing>(
+          update: (ctx, auth, previousDrawings) => Drawing(auth.token,
+              previousDrawings == null ? [] : previousDrawings.drawings),
+          create: null,
+        ),
+      ],
+      child: Consumer<Auth>(
+        builder: (ctx, auth, _) => MaterialApp(
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            fontFamily: 'Open Sans',
           ),
-        ],
-        child: Consumer<Auth>(
-            builder: (ctx, auth, _) => MaterialApp(
-                    theme: ThemeData(
-                      primarySwatch: Colors.blue,
-                      visualDensity: VisualDensity.adaptivePlatformDensity,
-                      fontFamily: 'Open Sans',
-                    ),
-                    home: auth.isAuth
-                        ? Home()
-                        : FutureBuilder(
-                            future: auth.tryAutoLogin(),
-                            builder: (_, authResultSnapshot) =>
-                                authResultSnapshot.connectionState ==
-                                        ConnectionState.waiting
-                                    ? SplashScreen()
-                                    : AuthScreen(),
-                          ),
-                    routes: {
-                      '/draw': (context) => Draw(),
-                      '/history': (context) => History(),
-                    })));
+          home: auth.isAuth
+              ? Home()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (_, authResultSnapshot) =>
+                      authResultSnapshot.connectionState ==
+                              ConnectionState.waiting
+                          ? SplashScreen()
+                          : AuthScreen(),
+                ),
+          routes: {
+            '/draw': (context) => Draw(),
+            '/history': (context) => History(),
+          },
+        ),
+      ),
+    );
   }
 }
